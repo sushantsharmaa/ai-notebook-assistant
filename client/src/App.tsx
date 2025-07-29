@@ -1,8 +1,10 @@
-import "./App.css";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import PdfViewer from "./Pages/PDFViewer";
+import "./App.css";
 import UploadPage from "./Pages/UploadPage";
+import PdfViewer from "./Pages/PdfViewer";
 import ChatScreen from "./Pages/ChatScreen";
+
 function App() {
   return (
     <Router>
