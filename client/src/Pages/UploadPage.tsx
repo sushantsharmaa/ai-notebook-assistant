@@ -34,7 +34,7 @@ const UploadPage: React.FC = () => {
         if (prev >= 100) {
           clearInterval(interval);
           setTimeout(() => {
-            navigate("/viewer"); // 👈 Navigate after 100%
+            navigate("/viewer");
           }, 500);
           return 100;
         }
