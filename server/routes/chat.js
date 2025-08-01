@@ -1,7 +1,12 @@
-// const express = require("express");
-// const router = express.Router();
-// const { handleChat } = require("../controllers/chatController");
+const express = require("express");
+const router = express.Router();
+const {
+  handleChat,
+  extractPdfContent,
+} = require("../controllers/chatController");
 
-// router.post("/", handleChat);
+router.post("/", handleChat);
 
-// module.exports = router;
+router.get("/extract/:filename", extractPdfContent);
+
+module.exports = router;

@@ -14,6 +14,7 @@
     "@types/styled-components": "^5.1.34",
     "axios": "^1.11.0",
     "lucide-react": "^0.533.0",
+    "pdfjs-dist": "^5.4.54",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-pdf": "^10.0.1",
@@ -46,5 +47,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react-pdf": "^6.2.0"
   }
 }

@@ -4,7 +4,6 @@ import { Upload } from "lucide-react";
 import {
   Container,
   Card,
-  Icon,
   IconWrapper,
   Title,
   Subtitle,
@@ -22,25 +21,41 @@ const UploadPage: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     setProgress(0);
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            navigate("/viewer");
-          }, 500);
-          return 100;
-        }
-        return prev + 5;
+    const formData = new FormData();
+    formData.append("pdf", file);
+
+    try {
+      const res = await fetch("http://localhost:5000/upload", {
+        method: "POST",
+        body: formData,
       });
-    }, 100);
+
+      const data = await res.json();
+      console.log("data", data);
+
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              navigate("/viewer", { state: { file: data } });
+            }, 500);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 100);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      setUploading(false);
+    }
   };
 
   return (
