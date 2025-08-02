@@ -1,12 +1,19 @@
+// routes/chat.js
 const express = require("express");
 const router = express.Router();
 const {
   handleChat,
   extractPdfContent,
-} = require("../controllers/chatController");
+  extractPdfContentByFilename,
+} = require("../controller/chatController"); // Fixed: controllers (plural)
 
+// Chat with PDF using fileId or filename
 router.post("/", handleChat);
 
-router.get("/extract/:filename", extractPdfContent);
+// Extract PDF content by fileId
+router.get("/extract/:fileId", extractPdfContent);
+
+// Extract PDF content by filename
+router.get("/extract/filename/:filename", extractPdfContentByFilename);
 
 module.exports = router;
