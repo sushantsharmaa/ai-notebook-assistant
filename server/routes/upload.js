@@ -1,19 +1,12 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { handleUpload } = require("../controllers/uploadController");
-const multer = require("multer");
-const path = require("path");
+const multer = require('multer');
+const { handleUpload } = require('../controllers/uploadController');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads"));
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+// Use memory storage to avoid saving locally
+const upload = multer({ storage: multer.memoryStorage() });
 
-const upload = multer({ storage });
+// Important: change "pdf" to match your frontend's `formData.append("file", ...)`
+router.post('/', upload.single('file'), handleUpload);
 
-router.post("/", upload.single("pdf"), handleUpload);
 module.exports = router;
