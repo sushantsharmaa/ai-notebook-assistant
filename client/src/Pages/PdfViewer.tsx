@@ -156,16 +156,6 @@ const PdfViewer = () => {
         }
       }
     } catch (error) {
-      const errorMessage: ChatMessage = {
-        id: generateMessageId(),
-        type: "assistant",
-        content: `Sorry, I encountered an error while processing your question: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }. Please try again.`,
-        timestamp: new Date(),
-      };
-
-      setChatMessages((prev) => [...prev, errorMessage]);
       setApiError(
         error instanceof Error ? error.message : "Unknown error occurred"
       );

@@ -54,6 +54,7 @@ Answer:`;
           "X-Title": "PDF Chat Application",
         },
         body: JSON.stringify({
+          model: "mistralai/mistral-7b-instruct",
           messages: [
             {
               role: "user",
