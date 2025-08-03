@@ -9,7 +9,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<UploadPage />} />
-        <Route path="/viewer" element={<PdfViewer />} />
+        <Route path="/viewer/:id" element={<PdfViewer />} />
       </Routes>
     </Router>
   );

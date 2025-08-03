@@ -1,209 +1,195 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect, ChangeEvent, useRef } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 import { Send } from "lucide-react";
+import { useParams } from "react-router-dom";
 
 import {
   Container,
   ChatArea,
   PdfArea,
-  PageTag,
   SubChatArea,
   InputButtonArea,
-  StyledTextarea,
-  SendButton,
+  HeaderContainer,
+  BackButton,
+  HeaderTitle,
   NotificationBox,
   CloseButton,
-  PdfContainer,
-  PdfEmbed,
-  ErrorMessage,
-  ErrorButton,
+  ChatHistoryContainer,
+  ChatMessageContainer,
+  UserMessageBubble,
+  AIMessageBubble,
+  ResponseContainer,
+  CitationsButtonContainer,
+  CitationButton,
+  LoadingMessageContainer,
   LoadingSpinner,
-  TypingIndicatorContainer,
-  TypingDots,
+  LoadingText,
+  PDFLoadingContainer,
+  PDFErrorContainer,
+  NoPDFContainer,
+  PDFContainer,
+  PDFViewerContainer,
+  PDFIframe,
+  EnhancedSendButton,
+  EnhancedTextarea,
 } from "../Style/PdfViewer.styled";
+interface Citation {
+  page: number;
+  text: string;
+}
 
 interface ChatMessage {
-  id: string;
-  type: "user" | "assistant";
-  content: string;
-  timestamp: Date;
+  type: "user" | "ai";
+  question?: string;
+  response?: string;
+  citations?: Citation[];
+  timestamp: number;
 }
 
-interface ApiResponse {
-  question: string;
-  response: string;
-  citations?: Array<{
-    page: number;
-    text: string;
-  }>;
-}
-
-const PdfViewer = () => {
-  const location = useLocation();
-  const [input, setInput] = useState("");
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [showNotification, setShowNotification] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [zoom, setZoom] = useState(100);
-  const [pdfError, setPdfError] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(true);
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [citationPage, setCitationPage] = useState<number | undefined>(
-    undefined
-  );
-
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const file = location.state?.file;
-  const fileApi = `http://localhost:5000${file.filePath}`;
-
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+const PdfViewer: React.FC = () => {
+  const { id: pdfId } = useParams<{ id: string }>();
+  const fetchedRef = useRef(false);
+  const navigate = useNavigate();
+  const [input, setInput] = useState<string>("");
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [showNotification, setShowNotification] = useState<boolean>(true);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [chatLoading, setChatLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [chatMessages, isTyping]);
-
-  useEffect(() => {
-    if (fileApi) {
-      setPdfLoading(true);
-
-      fetch(fileApi, { method: "HEAD" })
-        .then((response) => {
-          if (response.ok) {
-            setPdfUrl(fileApi);
-            setPdfError(false);
-          } else {
-            setPdfError(true);
-          }
-        })
-        .catch(() => {
-          setPdfError(true);
-        })
-        .finally(() => {
-          setPdfLoading(false);
-        });
-    } else {
-      setPdfLoading(false);
+    if (pdfId && !fetchedRef.current) {
+      fetchedRef.current = true;
+      fetchPdf(pdfId);
     }
-  }, [fileApi]);
+  }, [pdfId]);
 
-  const generateMessageId = () => {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
-  };
+  const fetchPdf = async (id: string) => {
+    if (loading || pdfUrl) return;
 
-  const callChatApi = async (
-    question: string,
-    filename: string
-  ): Promise<ApiResponse> => {
-    const response = await fetch("http://localhost:5000/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        filename: filename,
-        question: question,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-    return await response.json();
-  };
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userMessage: ChatMessage = {
-      id: generateMessageId(),
-      type: "user",
-      content: input.trim(),
-      timestamp: new Date(),
-    };
-
-    setChatMessages((prev) => [...prev, userMessage]);
-    const currentInput = input.trim();
-    setInput("");
-    setApiError(null);
-
-    setIsTyping(true);
+    setLoading(true);
+    setError(null);
 
     try {
-      const filename = file?.name || file?.filename || "document.pdf";
+      const response = await fetch(
+        `https://ai-notebook-assistant-one.onrender.com/upload/pdf/${id}`
+      );
 
-      const apiResponse = await callChatApi(currentInput, filename);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.status}`);
+      }
 
-      const assistantMessage: ChatMessage = {
-        id: generateMessageId(),
-        type: "assistant",
-        content: apiResponse.response,
-        timestamp: new Date(),
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Error fetching PDF:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendChatMessage = async () => {
+    if (!input.trim() || !pdfId || chatLoading) return;
+
+    const userMessage: ChatMessage = {
+      type: "user",
+      question: input,
+      timestamp: Date.now(),
+    };
+
+    setChatHistory((prev) => [...prev, userMessage]);
+    setChatLoading(true);
+
+    try {
+      const response = await fetch(
+        "https://ai-notebook-assistant-one.onrender.com/chat",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: input,
+            fileId: pdfId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Chat API failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const aiMessage: ChatMessage = {
+        type: "ai",
+        question: data.question,
+        response: data.response,
+        citations: data.citations || [],
+        timestamp: Date.now(),
       };
 
-      setChatMessages((prev) => [...prev, assistantMessage]);
-      setShowNotification(false);
-      setCitationPage(apiResponse.citations && apiResponse.citations[0].page);
-
-      if (apiResponse.citations && apiResponse.citations.length > 0) {
-        const firstCitation = apiResponse.citations[0];
-        if (firstCitation.page) {
-          setCurrentPage(firstCitation.page);
-        }
-      }
-    } catch (error) {
-      setApiError(
-        error instanceof Error ? error.message : "Unknown error occurred"
-      );
+      setChatHistory((prev) => [...prev, aiMessage]);
+    } catch (err: any) {
+      console.error("Chat error:", err);
+      const errorMessage: ChatMessage = {
+        type: "ai",
+        response: `Sorry, I encountered an error: ${err.message}`,
+        timestamp: Date.now(),
+      };
+      setChatHistory((prev) => [...prev, errorMessage]);
     } finally {
-      setIsTyping(false);
+      setChatLoading(false);
+      setInput("");
     }
+  };
+
+  const handleSend = () => {
+    sendChatMessage();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      sendChatMessage();
     }
   };
 
-  const openInNewTab = () => {
+  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleCitationClick = (pageNumber: number) => {
     if (pdfUrl) {
-      window.open(pdfUrl, "_blank");
+      const iframe = document.querySelector(
+        'iframe[title="PDF Viewer"]'
+      ) as HTMLIFrameElement;
+      if (iframe) {
+        iframe.src = `${pdfUrl}#page=${pageNumber}`;
+      }
     }
   };
 
-  const getPdfEmbedUrl = () => {
-    if (!pdfUrl) return "";
-
-    const separator = pdfUrl.includes("?") ? "&" : "?";
-    return `${pdfUrl}${separator}page=${currentPage}#zoom=${zoom}&view=FitH`;
+  const formatResponse = (text: string) => {
+    return text.split("\n").map((line, index) => <p key={index}>{line}</p>);
   };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
-  const TypingIndicator = () => (
-    <TypingIndicatorContainer>
-      <TypingDots>
-        <div />
-        <div />
-        <div />
-        <span>Thinking...</span>
-      </TypingDots>
-    </TypingIndicatorContainer>
-  );
 
   return (
     <Container>
       <ChatArea>
+        <HeaderContainer>
+          <BackButton>
+            <ArrowLeft onClick={() => navigate("/")} />
+          </BackButton>
+          <HeaderTitle>Document Chat AI</HeaderTitle>
+        </HeaderContainer>
         <SubChatArea>
-          {showNotification && (
+          {showNotification && chatHistory.length === 0 ? (
             <NotificationBox>
               <strong>Your document is ready!</strong>
               <CloseButton onClick={() => setShowNotification(false)}>
@@ -218,161 +204,100 @@ const PdfViewer = () => {
                 </ul>
               </p>
             </NotificationBox>
-          )}
-          {!showNotification && chatMessages.length > 0 && (
-            <h2
-              style={{
-                margin: "16px 0",
-                fontSize: "18px",
-                fontWeight: "bold",
-                color: "#333",
-              }}
-            >
-              ChatAI
-            </h2>
-          )}
-          <div style={{ flex: 1, overflowY: "auto", padding: "10px 0" }}>
-            {chatMessages.map((message) => (
-              <div
-                key={message.id}
-                style={{
-                  display: "flex",
-                  justifyContent:
-                    message.type === "user" ? "flex-end" : "flex-start",
-                  marginBottom: "12px",
-                }}
-              >
-                <div
-                  style={{
-                    maxWidth: "80%",
-                    padding: "12px 16px",
-                    borderRadius: "12px",
-                    backgroundColor:
-                      message.type === "user" ? "#007bff" : "#f8f9fa",
-                    color: message.type === "user" ? "white" : "#333",
-                    border:
-                      message.type === "assistant"
-                        ? "1px solid #e9ecef"
-                        : "none",
-                    position: "relative",
-                  }}
-                >
-                  <div style={{ marginBottom: "4px" }}>
-                    {message.content}
-                    {message.type === "assistant" ? (
-                      <PageTag>
-                        <span>Page {citationPage}</span>
-                      </PageTag>
-                    ) : null}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      opacity: 0.7,
-                      textAlign: "right",
-                      marginTop: "4px",
-                    }}
-                  >
-                    {formatTime(message.timestamp)}
-                  </div>
-                </div>
-              </div>
+          ) : null}
+
+          <ChatHistoryContainer>
+            {chatHistory.map((message, index) => (
+              <ChatMessageContainer key={index}>
+                {message.type === "user" ? (
+                  <UserMessageBubble>
+                    <strong>You:</strong>
+                    <p>{message.question}</p>
+                  </UserMessageBubble>
+                ) : (
+                  <AIMessageBubble>
+                    <strong>AI Assistant:</strong>
+                    <ResponseContainer>
+                      {message.response && formatResponse(message.response)}
+                    </ResponseContainer>
+
+                    {/* Citations */}
+                    {message.citations && message.citations.length > 0 && (
+                      <CitationsButtonContainer>
+                        {message.citations.map((citation, citIndex) => (
+                          <CitationButton
+                            key={citIndex}
+                            onClick={() => handleCitationClick(citation.page)}
+                            title={citation.text}
+                          >
+                            Page {citation.page}
+                          </CitationButton>
+                        ))}
+                      </CitationsButtonContainer>
+                    )}
+                  </AIMessageBubble>
+                )}
+              </ChatMessageContainer>
             ))}
-            {isTyping && <TypingIndicator />}
-            {apiError && (
-              <div
-                style={{
-                  padding: "12px 16px",
-                  background: "#f8d7da",
-                  border: "1px solid #f5c6cb",
-                  color: "#721c24",
-                  borderRadius: "8px",
-                  marginBottom: "12px",
-                }}
-              >
-                <strong>Error:</strong> {apiError}
-              </div>
+
+            {chatLoading && (
+              <LoadingMessageContainer>
+                <LoadingSpinner />
+                <LoadingText>AI is thinking...</LoadingText>
+              </LoadingMessageContainer>
             )}
-            <div ref={chatEndRef} />
-          </div>
+          </ChatHistoryContainer>
         </SubChatArea>
 
         <InputButtonArea>
-          <StyledTextarea
-            placeholder="Ask something about your PDF..."
+          <EnhancedTextarea
+            placeholder="Ask something about your document..."
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
-            disabled={isTyping}
+            disabled={chatLoading}
           />
-          <SendButton
+          <EnhancedSendButton
             onClick={handleSend}
-            disabled={!input.trim() || isTyping}
-            style={{
-              opacity: !input.trim() || isTyping ? 0.5 : 1,
-              cursor: !input.trim() || isTyping ? "not-allowed" : "pointer",
-            }}
+            disabled={chatLoading || !input.trim()}
           >
             <Send />
-          </SendButton>
+          </EnhancedSendButton>
         </InputButtonArea>
       </ChatArea>
 
       <PdfArea>
-        {pdfLoading ? (
-          <LoadingSpinner>
-            <div className="spinner"></div>
+        {loading && (
+          <PDFLoadingContainer>
             <p>Loading PDF...</p>
-          </LoadingSpinner>
-        ) : fileApi && pdfUrl && !pdfError ? (
-          <PdfContainer>
-            <PdfEmbed
-              src={getPdfEmbedUrl()}
-              type="application/pdf"
-              title="PDF Document"
-            />
-          </PdfContainer>
-        ) : pdfError ? (
-          <ErrorMessage>
-            <div>
-              <h3 style={{ color: "#e74c3c", marginBottom: "10px" }}>
-                PDF Loading Error
-              </h3>
-              <p>Unable to display the PDF file.</p>
-              <p
-                style={{
-                  fontSize: "14px",
-                  marginTop: "10px",
-                  color: "#7f8c8d",
+          </PDFLoadingContainer>
+        )}
+
+        {error && (
+          <PDFErrorContainer>
+            <p>Error: {error}</p>
+            {pdfId && <p>PDF ID: {pdfId}</p>}
+          </PDFErrorContainer>
+        )}
+
+        {!pdfId && !loading && (
+          <NoPDFContainer>
+            <p>No PDF ID provided.</p>
+          </NoPDFContainer>
+        )}
+
+        {pdfUrl && !loading && !error && (
+          <PDFContainer>
+            <PDFViewerContainer>
+              <PDFIframe
+                src={pdfUrl}
+                title="PDF Viewer"
+                onError={() => {
+                  console.log("Iframe failed, trying object element");
                 }}
-              >
-                This might be due to browser restrictions or file format issues.
-              </p>
-              {fileApi && (
-                <ErrorButton onClick={openInNewTab}>
-                  Open PDF in New Tab
-                </ErrorButton>
-              )}
-            </div>
-          </ErrorMessage>
-        ) : (
-          <ErrorMessage>
-            <div>
-              <h3 style={{ color: "#95a5a6", marginBottom: "10px" }}>
-                No PDF Selected
-              </h3>
-              <p>Please upload a PDF file to view it here.</p>
-              <p
-                style={{
-                  fontSize: "14px",
-                  marginTop: "10px",
-                  color: "#7f8c8d",
-                }}
-              >
-                Go back to the upload page to select a document.
-              </p>
-            </div>
-          </ErrorMessage>
+              />
+            </PDFViewerContainer>
+          </PDFContainer>
         )}
       </PdfArea>
     </Container>

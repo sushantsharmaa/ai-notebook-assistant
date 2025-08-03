@@ -38,10 +38,19 @@ export const Title = styled.h2`
   font-weight: 600;
 `;
 
-export const Subtitle = styled.p`
-  font-size: 14px;
-  color: #555;
-  margin-top: 8px;
+export const InfoBox = styled.div`
+  margin-top: 12px;
+  padding: 10px 14px;
+
+  border-radius: 8px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+
+  & > p {
+    margin: 4px 0;
+  }
 `;
 
 export const HiddenInput = styled.input`

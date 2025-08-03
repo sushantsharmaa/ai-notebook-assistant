@@ -6,7 +6,7 @@ import {
   Card,
   IconWrapper,
   Title,
-  Subtitle,
+  InfoBox,
   HiddenInput,
   ProgressContainer,
   Spinner,
@@ -29,13 +29,16 @@ const UploadPage: React.FC = () => {
     setProgress(0);
 
     const formData = new FormData();
-    formData.append("pdf", file);
+    formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:5000/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://ai-notebook-assistant-one.onrender.com/upload/pdf",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await res.json();
       console.log("data", data);
@@ -45,7 +48,7 @@ const UploadPage: React.FC = () => {
           if (prev >= 100) {
             clearInterval(interval);
             setTimeout(() => {
-              navigate("/viewer", { state: { file: data } });
+              navigate(`/viewer/${data?.file?.id}`);
             }, 500);
             return 100;
           }
@@ -75,7 +78,11 @@ const UploadPage: React.FC = () => {
             <Upload size={30} color="#a855f7" />
           </IconWrapper>
           <Title>Upload PDF to start chatting</Title>
-          <Subtitle>Click or drag and drop your file here</Subtitle>
+          <InfoBox>
+            <p>📄 Only PDF format is supported</p>
+            <p>⚡ Instantly get AI-powered answers & summaries</p>
+            <p>🎯 Ideal for research papers, study notes, manuals & more</p>
+          </InfoBox>
           <HiddenInput
             type="file"
             id="fileInput"

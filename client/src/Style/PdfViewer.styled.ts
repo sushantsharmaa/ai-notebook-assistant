@@ -8,6 +8,7 @@ export const Container = styled.div`
 export const ChatArea = styled.div`
   width: 50%;
   padding: 20px;
+  padding-top: 0px;
   border-right: 1px solid #e2e8f0;
   background: #f1f5f9;
   display: flex;
@@ -21,33 +22,35 @@ export const InputButtonArea = styled.div`
 export const SubChatArea = styled.div`
   flex: 1;
   overflow-y: auto;
+  scroll-behavior: smooth;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  scrollbar-width: none;
+
+  -ms-overflow-style: none;
+`;
+
+export const ChatMessageContainer = styled.div`
+  margin-bottom: 20px;
 `;
 
 export const PdfArea = styled.div`
   width: 50%;
-
   overflow-y: auto;
 `;
 
-export const IconWrapper = styled.div`
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
-  background-color: #f3e8ff;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
 export const NotificationBox = styled.div`
-  background-color: #f3e8ff;
+  background-color: #ebd6fb;
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 16px;
   color: #6b21a8;
   font-size: 14px;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 export const CloseButton = styled.button`
@@ -72,7 +75,7 @@ export const StyledTextarea = styled.textarea`
 `;
 
 export const SendButton = styled.button`
-  background-color: #a855f7;
+  background-color: #667eea;
   border: none;
   border-radius: 10px;
   color: white;
@@ -84,201 +87,241 @@ export const SendButton = styled.button`
   align-items: center;
   justify-content: center;
 `;
-export const PdfContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: #f5f5f5;
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 `;
 
-export const PdfToolbar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+export const ChatHistoryContainer = styled.div`
+  flex: 1;
+  padding: 10px 0;
+`;
+
+export const UserMessageBubble = styled.div`
+  background-color: #a4cdeaff;
   padding: 12px 16px;
-  background: #2c3e50;
-  color: white;
-  gap: 15px;
-  font-size: 14px;
+  border-radius: 12px;
+  margin-right: 10px;
+  margin-left: 20%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  strong {
+    color: #333;
+  }
+
+  p {
+    margin: 8px 0 0 0;
+    line-height: 1.5;
+  }
 `;
 
-export const ToolbarGroup = styled.div`
+export const AIMessageBubble = styled.div`
+  background-color: #f5f5f5;
+  padding: 16px;
+  border-radius: 12px;
+  margin-left: 10px;
+  margin-right: 10%;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  strong {
+    color: #1976d2;
+  }
+`;
+
+export const ResponseContainer = styled.div`
+  margin-top: 8px;
+
+  p {
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+`;
+
+export const CitationsContainer = styled.div`
+  margin-top: 16px;
+
+  strong {
+    font-size: 14px;
+    color: #666;
+  }
+`;
+
+export const CitationsButtonContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+export const CitationButton = styled.button`
+  padding: 6px 12px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #1565c0;
+  }
+
+  &:active {
+    background-color: #0d47a1;
+  }
+`;
+
+export const LoadingMessageContainer = styled.div`
+  background-color: #f5f5f5;
+  padding: 16px;
+  border-radius: 12px;
+  margin-right: 10%;
+  border: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
   gap: 10px;
 `;
 
-export const ToolbarButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  background: #34495e;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  cursor: pointer;
-  font-size: 13px;
-  gap: 5px;
-  transition: background 0.2s;
+export const LoadingSpinner = styled.div`
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #1976d2;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
 
-  &:hover {
-    background: #4a6741;
+export const LoadingText = styled.span`
+  color: #666;
+`;
+
+export const PDFLoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+
+  p {
+    font-size: 16px;
+    color: #666;
   }
+`;
+
+export const PDFErrorContainer = styled.div`
+  color: red;
+  padding: 20px;
+  text-align: center;
+
+  p {
+    margin: 8px 0;
+  }
+`;
+
+export const NoPDFContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+
+  p {
+    font-size: 16px;
+    color: #666;
+  }
+`;
+
+export const PDFContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+`;
+
+export const PDFPageIndicator = styled.div`
+  padding: 8px 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  text-align: center;
+  font-size: 14px;
+  color: #6c757d;
+`;
+
+export const PDFViewerContainer = styled.div`
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+`;
+
+export const PDFIframe = styled.iframe`
+  width: 100%;
+  height: 100%;
+  border: none;
+`;
+
+export const EnhancedInputButtonArea = styled(InputButtonArea)`
+  .disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .loading {
+    opacity: 0.7;
+  }
+`;
+
+export const EnhancedSendButton = styled(SendButton)<{ disabled?: boolean }>`
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: #2c3e50;
   }
 `;
 
-export const PageInfo = styled.span`
-  font-size: 14px;
-  color: #ecf0f1;
-  min-width: 120px;
-  text-align: center;
-  font-weight: 500;
+export const EnhancedTextarea = styled(StyledTextarea)<{ disabled?: boolean }>`
+  opacity: ${(props) => (props.disabled ? 0.7 : 1)};
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 `;
 
-export const ZoomInfo = styled.span`
-  font-size: 14px;
-  color: #ecf0f1;
-  min-width: 60px;
-  text-align: center;
-  font-weight: 500;
+export const ConditionalNotificationBox = styled(NotificationBox)<{
+  show: boolean;
+}>`
+  display: ${(props) => (props.show ? "block" : "none")};
 `;
 
-export const PdfViewerContainer = styled.div``;
-
-export const PdfEmbed = styled.embed`
-  width: 100%;
-  height: 800px;
-  max-width: 900px;
-
-  background: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-`;
-
-export const ErrorMessage = styled.div`
+export const HeaderContainer = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #7f8c8d;
-  font-size: 16px;
-  text-align: center;
-  background: #ecf0f1;
-  padding: 40px;
-`;
-
-export const ErrorButton = styled.button`
-  margin-top: 20px;
-  padding: 12px 24px;
-  background: #3498db;
+  padding: 0 20px;
+  margin: 10px 0px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: sticky;
+  top: 0;
   color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-
-  &:hover {
-    background: #2980b9;
-  }
-`;
-
-export const LoadingSpinner = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #7f8c8d;
-  background: #ecf0f1;
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #bdc3c7;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 20px;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const typingAnimation = keyframes`
-  0%, 60%, 100% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-  30% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-`;
-
-export const TypingIndicatorContainer = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: #f8f9fa;
+  z-index: 100;
   border-radius: 12px;
-  margin-bottom: 12px;
-  border: 1px solid #e9ecef;
-  max-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
-export const PageTag = styled.span`
-  background-color: #f3e8ff;
-  width: 8%;
+export const BackButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9333ea;
-  padding: 4px 10px;
-  margin-top: 10px;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  display: block;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
-export const TypingDots = styled.div`
-  display: flex;
-  gap: 4px;
-  align-items: center;
-
-  div {
-    width: 8px;
-    height: 8px;
-    background-color: #6c757d;
-    border-radius: 50%;
-    animation: ${typingAnimation} 1.4s ease-in-out infinite both;
-
-    &:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    &:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-  }
-
-  span {
-    margin-left: 8px;
-    color: #6c757d;
-    font-size: 14px;
-  }
+export const HeaderTitle = styled.h1`
+  margin-left: 15px;
+  font-size: 18px;
+  padding: 0;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 `;
