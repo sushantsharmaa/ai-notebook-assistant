@@ -65,7 +65,7 @@ const PdfViewer: React.FC = () => {
       fetchedRef.current = true;
       fetchPdf(pdfId);
     }
-  }, [pdfId]);
+  });
 
   const fetchPdf = async (id: string) => {
     if (loading || pdfUrl) return;
