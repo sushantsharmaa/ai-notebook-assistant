@@ -1,12 +1,9 @@
-// controllers/uploadController.js
 const multer = require("multer");
 const mongoose = require("mongoose");
 const { Readable } = require("stream");
 
-// Memory storage for multer
 const storage = multer.memoryStorage();
 
-// File filter to only accept PDFs
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === "application/pdf") {
     cb(null, true);
@@ -19,11 +16,10 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 100 * 1024 * 1024,
   },
 });
 
-// Function to upload file to GridFS
 const uploadToGridFS = async (file) => {
   return new Promise((resolve, reject) => {
     const db = mongoose.connection.db;
@@ -37,7 +33,6 @@ const uploadToGridFS = async (file) => {
       },
     });
 
-    // Convert buffer to readable stream
     const readableStream = new Readable({
       read() {},
     });

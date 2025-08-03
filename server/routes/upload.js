@@ -1,10 +1,8 @@
-// routes/upload.js
 const express = require("express");
 const router = express.Router();
 const { upload, uploadToGridFS } = require("../controller/uploadController");
 const mongoose = require("mongoose");
 
-// Upload PDF endpoint
 router.post("/pdf", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
@@ -14,7 +12,6 @@ router.post("/pdf", upload.single("file"), async (req, res) => {
       });
     }
 
-    // Upload to GridFS
     const uploadedFile = await uploadToGridFS(req.file);
 
     res.status(200).json({
@@ -32,7 +29,6 @@ router.post("/pdf", upload.single("file"), async (req, res) => {
   }
 });
 
-// Get all uploaded PDFs
 router.get("/pdfs", async (req, res) => {
   try {
     const db = mongoose.connection.db;
@@ -68,7 +64,6 @@ router.get("/pdfs", async (req, res) => {
   }
 });
 
-// Download PDF by ID
 router.get("/pdf/:id", async (req, res) => {
   try {
     const db = mongoose.connection.db;
@@ -76,7 +71,6 @@ router.get("/pdf/:id", async (req, res) => {
 
     const fileId = new mongoose.Types.ObjectId(req.params.id);
 
-    // Check if file exists
     const file = await db.collection("pdfs.files").findOne({ _id: fileId });
 
     if (!file) {
@@ -86,13 +80,11 @@ router.get("/pdf/:id", async (req, res) => {
       });
     }
 
-    // Set proper headers for PDF
     res.set({
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="${file.filename}"`,
     });
 
-    // Stream the file
     const downloadStream = bucket.openDownloadStream(fileId);
     downloadStream.pipe(res);
 
@@ -115,7 +107,6 @@ router.get("/pdf/:id", async (req, res) => {
   }
 });
 
-// Delete PDF by ID
 router.delete("/pdf/:id", async (req, res) => {
   try {
     const db = mongoose.connection.db;
@@ -123,7 +114,6 @@ router.delete("/pdf/:id", async (req, res) => {
 
     const fileId = new mongoose.Types.ObjectId(req.params.id);
 
-    // Check if file exists
     const file = await db.collection("pdfs.files").findOne({ _id: fileId });
 
     if (!file) {

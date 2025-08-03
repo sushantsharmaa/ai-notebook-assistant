@@ -1,4 +1,3 @@
-// controllers/chatController.js
 const mongoose = require("mongoose");
 const pdf = require("pdf-parse");
 
@@ -30,18 +29,7 @@ User Question: ${question}
 Instructions:
 1. Answer the question based solely on the document content provided
 2. Be concise, accurate, and helpful
-3. If the information exists in the document, provide a clear answer
-4. If the answer isn't clearly available in the provided content, state this clearly
-5. When referencing specific information, try to indicate which part of the content it comes from
-6. IMPORTANT: At the end of your response, if you found relevant information, add citations in this exact format:
-   CITATIONS: [Page X, Page Y] (where X, Y are your best estimates of which pages contain the relevant information)
-   
-   Guidelines for page estimation:
-   - For documents with ${pdfPages} total pages
-   - If referencing content from the beginning: use pages 1-2
-   - If referencing content from the middle: use middle page numbers
-   - If referencing content from throughout: use multiple page numbers
-   - If you cannot determine specific pages, use: CITATIONS: [Pages 1-${pdfPages}]
+3. If the information exists in the document, provide a clear answer.
 
 Answer:`;
 
